@@ -1,0 +1,30 @@
+{
+  "name": "lesson1",
+  "version": "1.0.0",
+  "description": "lesson1 tutorial",
+  "main": "index.html",
+  "scripts": {
+    "test": "gulp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuchkevich/lesson1.git"
+  },
+  "keywords": [
+    "html",
+    "lesson1",
+    "git",
+    "branches"
+  ],
+  "author": "Val Tuchkevich",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tuchkevich/lesson1/issues"
+  },
+  "homepage": "https://github.com/tuchkevich/lesson1#readme",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "bootstrap": "^4.6.0",
+    "jquery": "^3.6.0"
+  }
+}
