@@ -6,8 +6,11 @@ const gulp = require('gulp'),
     sass = require('gulp-sass')(require('node-sass')),
     prefixer = require('gulp-autoprefixer'),
     terser = require('gulp-terser'),
+    header = require('gulp-header'),
     htmlmin = require('gulp-htmlmin'),
-    rigger = require('gulp-rigger');
+    rigger = require('gulp-rigger'),
+    browserSync = require('browser-sync'),
+    reload = browserSync.reload;
 
 // описание путей
 const path = {
@@ -25,7 +28,58 @@ const path = {
         fonts:'src/fonts/**/*.{eot,svg,ttf,woff,woff2}',
         img:'src/img/**/*.{jpg,gif,jpeg,png,svg,webp}',
     }
+},
+    config ={
+    server:{
+        baseDir:'build/',
+        index:'index.html'
+    },
+        port:7787
 };
+
+
+
+/**Returns arguments array passed through the command line after the task name
+ * Algorithm compares received arguments and values with normalized ones
+ * to find out whether argument name or value is passed into console
+ * Afterwards it forms arg[curOpt] element and sets it to 'true',
+ * so if an argument name is not provided with value it will have a 'true' value by default
+ * Then we check whether the argument value is set and we need to override it
+ * @property {object} [argList] arguments array from current node process process.argv
+ * @property {number} [a] arguments counter
+ * @property {string} [thisOpt] received argument from array
+ * @property {string} [opt] argument without '-' or '--'
+ * @property {string} [curOpt] current used argument
+ * @return {object} [arg] array of argument names and values
+ */
+
+const arg = (argList => {
+// get arguments passed in node process through process.argv to argList
+
+    let arg = {}, a, opt, thisOpt, curOpt;
+
+    // go through argList
+    for (a = 0; a < argList.length; a++) {
+
+        // trim each object element
+        thisOpt = argList[a].trim();
+
+        // replace - or -- from key arguments
+        opt = thisOpt.replace(/^-+/, '');
+
+        if (opt === thisOpt) {
+            // argument value
+            if (curOpt) arg[curOpt] = opt;
+            curOpt = null;
+        }
+        else {
+            // argument name
+            curOpt = opt;
+            arg[curOpt] = true;
+        }
+    }
+    return arg;
+})(process.argv);
 
 // описание задач
 gulp.task('mv:fonts', function(done){
@@ -49,6 +103,25 @@ gulp.task('mv:fonts', function(done){
     done();
 });
 
+gulp.task('test',function (done){
+    console.log(arg);
+    done();
+});
+
+gulp.task('addHeader',function (done) {
+    let theme;
+    if(typeof arg.theme !== 'undefined' &&  arg.theme !== true){
+        theme = arg.theme;
+        console.log('Using '+arg.theme+' theme!');
+    }else{
+        theme = 'polytech';
+        console.log('Using default theme!');
+    }
+    gulp.src('src/var/_variables.scss')
+        .pipe(header('$theme: '+theme+';'))
+        .pipe(gulp.dest('src/scss/'));
+    done();
+});
 
 gulp.task('build:html', function (done){
     gulp.src(path.src.html)
@@ -76,6 +149,12 @@ gulp.task('build:scss', function (done){
     done();
 });
 
+gulp.task('webserver', function (done){
+    browserSync(config);
+    done();
+})
+
 
 // Основная задача
-gulp.task('default', gulp.series('mv:fonts'));
+gulp.task('default', gulp.series('addHeader', gulp.parallel('build:scss','build:html','mv:fonts'),'webserver'));
+
